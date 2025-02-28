@@ -6,6 +6,9 @@ import com.finbite.bilnexserver.notification.models.EmailVerification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,7 +23,9 @@ public class EmailVerificationListener {
     @Autowired
     private EmailVerificationService emailVerificationService;
 
+    @Async
     @EventListener
+    @Retryable(backoff = @Backoff(delay = 3000)) // 3 retries as default
     public void listenToEmailVerificationEvent(EmailVerificationRequest event) {
         try {
             EmailVerification emailVerification = new EmailVerification();
