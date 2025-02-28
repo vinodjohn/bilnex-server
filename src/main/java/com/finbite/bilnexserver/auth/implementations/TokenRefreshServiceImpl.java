@@ -31,7 +31,7 @@ public class TokenRefreshServiceImpl implements TokenRefreshService {
     @Autowired
     private PersonService personService;
 
-    @Value("${inLoan.app.jwtRefreshExpirationSec}")
+    @Value("${bilnex.app.jwtRefreshExpirationSec}")
     private int tokenRefreshDuration;
 
     @Override

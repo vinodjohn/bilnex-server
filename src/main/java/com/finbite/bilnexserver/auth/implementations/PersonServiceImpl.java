@@ -1,5 +1,6 @@
 package com.finbite.bilnexserver.auth.implementations;
 
+import com.finbite.bilnexserver.auth.events.EmailVerificationProducerService;
 import com.finbite.bilnexserver.auth.PersonService;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Person;
@@ -29,6 +30,9 @@ public class PersonServiceImpl implements PersonService {
     private PersonRepository personRepository;
 
     @Autowired
+    private EmailVerificationProducerService emailVerificationProducerService;
+
+    @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
@@ -38,7 +42,11 @@ public class PersonServiceImpl implements PersonService {
         }
 
         person.setPassword(bCryptPasswordEncoder.encode(person.getPassword()));
-        return personRepository.saveAndFlush(person);
+        Person savedPerson = personRepository.saveAndFlush(person);
+
+        emailVerificationProducerService.sendVerificationRequest(person.getEmail());
+
+        return savedPerson;
     }
 
     @Override

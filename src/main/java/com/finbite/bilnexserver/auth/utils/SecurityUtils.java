@@ -29,17 +29,16 @@ import java.util.concurrent.TimeUnit;
 @Component
 @RequiredArgsConstructor
 public class SecurityUtils {
-
-    @Value("${inLoan.app.jwtSecret}")
+    @Value("${bilnex.app.jwtSecret}")
     private String jwtSecret;
 
-    @Value("${inLoan.app.jwtExpirationSec}")
+    @Value("${bilnex.app.jwtExpirationSec}")
     private int jwtExpirationSec;
 
-    @Value("${inLoan.app.jwtCookieName}")
+    @Value("${bilnex.app.jwtCookieName}")
     private String jwtCookieName;
 
-    @Value("${inLoan.app.jwtRefreshCookieName}")
+    @Value("${bilnex.app.jwtRefreshCookieName}")
     private String jwtRefreshCookieName;
 
     public String generateTokenFromUsername(String username) {
