@@ -1,6 +1,5 @@
 package com.finbite.bilnexserver.auth.dtos;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**

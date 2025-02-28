@@ -1,6 +1,5 @@
 package com.finbite.bilnexserver.common.handlers;
 
-import com.finbite.bilnexserver.auth.configs.CustomUserDetails;
 import com.finbite.bilnexserver.common.dtos.AuditorDto;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.lang.NonNull;
