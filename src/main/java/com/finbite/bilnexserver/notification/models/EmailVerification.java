@@ -17,7 +17,6 @@ import java.util.UUID;
  */
 @Data
 @Entity
-@ValidPerson
 @EqualsAndHashCode(callSuper = true)
 public class EmailVerification extends Auditable<String> {
     @Id

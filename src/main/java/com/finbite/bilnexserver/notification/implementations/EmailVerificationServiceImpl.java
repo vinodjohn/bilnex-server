@@ -4,6 +4,7 @@ import com.finbite.bilnexserver.notification.EmailService;
 import com.finbite.bilnexserver.notification.EmailVerificationService;
 import com.finbite.bilnexserver.notification.models.EmailVerification;
 import com.finbite.bilnexserver.notification.repositories.EmailVerificationRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
  * @author vinodjohn
  * @created 28.02.2025
  */
+@Slf4j
 @Service
 @Transactional
 public class EmailVerificationServiceImpl implements EmailVerificationService {
@@ -30,14 +32,18 @@ public class EmailVerificationServiceImpl implements EmailVerificationService {
     private EmailVerificationRepository emailVerificationRepository;
 
     @Override
-    public void sendVerificationEmail(String email, String verificationCode) {
-        String subject = "Bilnex verification email";
-        String body = "Your verification code is: " + verificationCode + "\nIt expires in " + expirationMinutes + "minutes.";
-        emailService.sendEmail(email, subject, body);
+    public void sendVerificationEmail(EmailVerification emailVerification) {
+        log.info("Handling email verification event for {}", emailVerification.getEmail());
 
-        EmailVerification emailVerification = new EmailVerification();
-        emailVerification.setEmail(email);
-        emailVerification.setVerificationCode(verificationCode);
+        String subject = "Bilnex verification email";
+        String body =
+                "Your verification code is: " + emailVerification.getVerificationCode() + "\nIt expires in " + expirationMinutes +
+                "minutes.";
+
+        emailService.sendEmail(emailVerification.getEmail(), subject, body);
+
+        log.info("Verification email sent to {}", emailVerification.getEmail());
+
         emailVerification.setExpirationTime(LocalDateTime.now().plusMinutes(expirationMinutes));
 
         emailVerificationRepository.save(emailVerification);

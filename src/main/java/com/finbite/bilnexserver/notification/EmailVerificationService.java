@@ -1,5 +1,7 @@
 package com.finbite.bilnexserver.notification;
 
+import com.finbite.bilnexserver.notification.models.EmailVerification;
+
 /**
  * Service to handle email verification operations
  *
@@ -10,8 +12,7 @@ public interface EmailVerificationService {
     /**
      * To send verification email to the user
      *
-     * @param email Email of the user
-     * @param verificationCode Generated verification code
+     * @param emailVerification Email Verification Object
      */
-    void sendVerificationEmail(String email, String verificationCode);
+    void sendVerificationEmail(EmailVerification emailVerification);
 }

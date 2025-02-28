@@ -1,6 +1,6 @@
 package com.finbite.bilnexserver.auth.implementations;
 
-import com.finbite.bilnexserver.auth.events.EmailVerificationProducerService;
+import com.finbite.bilnexserver.auth.events.EmailVerificationPublisher;
 import com.finbite.bilnexserver.auth.PersonService;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Person;
@@ -30,7 +30,7 @@ public class PersonServiceImpl implements PersonService {
     private PersonRepository personRepository;
 
     @Autowired
-    private EmailVerificationProducerService emailVerificationProducerService;
+    private EmailVerificationPublisher emailVerificationProducerService;
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;

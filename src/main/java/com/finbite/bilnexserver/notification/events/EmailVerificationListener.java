@@ -1,12 +1,12 @@
 package com.finbite.bilnexserver.notification.events;
 
+import com.finbite.bilnexserver.common.events.EmailVerificationRequest;
 import com.finbite.bilnexserver.notification.EmailVerificationService;
+import com.finbite.bilnexserver.notification.models.EmailVerification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
-import static com.finbite.bilnexserver.common.utils.Constants.Events.EMAIL_VERIFICATION;
 
 /**
  * Service to handle Email Verification Consumer operations
@@ -16,19 +16,18 @@ import static com.finbite.bilnexserver.common.utils.Constants.Events.EMAIL_VERIF
  */
 @Slf4j
 @Service
-public class EmailVerificationConsumerService {
+public class EmailVerificationListener {
     @Autowired
-
     private EmailVerificationService emailVerificationService;
 
-    @KafkaListener(topics = EMAIL_VERIFICATION, groupId = "bilnex-events-group")
-    public void listenToEmailVerificationEvent(String eventMessage) {
+    @EventListener
+    public void listenToEmailVerificationEvent(EmailVerificationRequest event) {
         try {
-            String[] parts = eventMessage.split(",");
-            String email = parts[0].split("=")[1];
-            String verificationCode = parts[1].split("=")[1];
+            EmailVerification emailVerification = new EmailVerification();
+            emailVerification.setEmail(event.getEmail());
+            emailVerification.setVerificationCode(event.getCode());
 
-            emailVerificationService.sendVerificationEmail(email, verificationCode);
+            emailVerificationService.sendVerificationEmail(emailVerification);
         } catch (Exception e) {
             log.error("Error processing email verification event: {}", e.getMessage());
         }
