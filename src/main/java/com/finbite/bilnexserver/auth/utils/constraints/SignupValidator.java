@@ -3,11 +3,13 @@ package com.finbite.bilnexserver.auth.utils.constraints;
 import com.finbite.bilnexserver.auth.AuthValidationService;
 import com.finbite.bilnexserver.auth.dtos.SignUp;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
-import com.finbite.bilnexserver.auth.models.Company;
 import com.finbite.bilnexserver.auth.models.Person;
+import com.finbite.bilnexserver.auth.utils.AuthUtils;
+import com.finbite.bilnexserver.common.exceptions.AppValidationException;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
 /**
  * Constraint validator to check if Signup is valid
@@ -15,9 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author vinodjohn
  * @created 27.02.2025
  */
+@Component
+@AllArgsConstructor
 public class SignupValidator implements ConstraintValidator<ValidSignup, SignUp> {
-    @Autowired
-    private AuthValidationService authValidationService;
+    private final AuthValidationService authValidationService;
 
     @Override
     public void initialize(ValidSignup constraintAnnotation) {
@@ -25,29 +28,24 @@ public class SignupValidator implements ConstraintValidator<ValidSignup, SignUp>
     }
 
     @Override
-    public boolean isValid(SignUp signup, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(SignUp signUp, ConstraintValidatorContext constraintValidatorContext) {
         try {
-            Person person = new Person();
-            person.setEmail(signup.email());
-            person.setPassword(signup.password());
-            person.setVerified(signup.isVerified());
+            if (!signUp.isVerified()) {
+                Person person = new Person();
+                person.setEmail(signUp.email());
 
-            authValidationService.validatePerson(person);
+                authValidationService.validatePerson(person);
+            } else {
+                Person person = new Person();
+                person.setEmail(signUp.email());
+                person.setPassword(signUp.password());
+                authValidationService.validatePerson(person);
 
-            if (signup.isVerified() && signup.company().id() == null) {
-                Company company = new Company();
-                company.setName(signup.company().name());
-                company.setRegCode(signup.company().regCode());
-                company.setVatNr(signup.company().vatNr());
-                company.setAddress(signup.company().address());
-                company.setCity(signup.company().city());
-                company.setZipcode(signup.company().zipcode());
-
-                authValidationService.validateCompany(company);
+                authValidationService.validateCompany(AuthUtils.translateSignupToCompany(signUp));
             }
 
             return true;
-        } catch (PersonNotFoundException e) {
+        } catch (PersonNotFoundException | AppValidationException e) {
             if (!e.getMessage().isBlank()) {
                 constraintValidatorContext.buildConstraintViolationWithTemplate(e.getMessage())
                         .addConstraintViolation()

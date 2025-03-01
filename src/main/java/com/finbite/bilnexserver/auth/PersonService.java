@@ -80,7 +80,7 @@ public interface PersonService {
     /**
      * To update system language for the person
      *
-     * @param id Person ID
+     * @param id       Person ID
      * @param language System Language
      */
     void updateSystemLanguage(UUID id, SystemLanguage language) throws PersonNotFoundException;

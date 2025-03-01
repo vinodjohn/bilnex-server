@@ -17,4 +17,8 @@ public class CompanyNotFoundException extends Exception {
     public CompanyNotFoundException(UUID id) {
         super(MessageFormat.format("Company not found! (ID: {0})", id));
     }
+
+    public CompanyNotFoundException(String regCode) {
+        super(MessageFormat.format("Company not found! (Reg code: {0})", regCode));
+    }
 }

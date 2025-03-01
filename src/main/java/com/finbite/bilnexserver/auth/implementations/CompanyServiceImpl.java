@@ -4,7 +4,7 @@ import com.finbite.bilnexserver.auth.CompanyService;
 import com.finbite.bilnexserver.auth.exceptions.CompanyNotFoundException;
 import com.finbite.bilnexserver.auth.models.Company;
 import com.finbite.bilnexserver.auth.repositories.CompanyRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,9 +21,9 @@ import java.util.UUID;
  */
 @Service
 @Transactional
+@AllArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
-    @Autowired
-    private CompanyRepository companyRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     public Company createCompany(Company company) {
@@ -36,6 +36,17 @@ public class CompanyServiceImpl implements CompanyService {
 
         if (company.isEmpty()) {
             throw new CompanyNotFoundException(id);
+        }
+
+        return company.get();
+    }
+
+    @Override
+    public Company findCompanyByRegCode(String regCode) throws CompanyNotFoundException {
+        Optional<Company> company = companyRepository.findByRegCode(regCode);
+
+        if (company.isEmpty()) {
+            throw new CompanyNotFoundException(regCode);
         }
 
         return company.get();

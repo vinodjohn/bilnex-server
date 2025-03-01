@@ -4,7 +4,7 @@ import com.finbite.bilnexserver.auth.AuthValidationService;
 import com.finbite.bilnexserver.auth.dtos.ChangePassword;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
  * @created 27.02.2025
  */
 @Component
+@AllArgsConstructor
 public class ChangePasswordValidator implements ConstraintValidator<ValidChangePassword, ChangePassword> {
-    @Autowired
-    private AuthValidationService authValidationService;
+    private final AuthValidationService authValidationService;
 
     @Override
     public void initialize(ValidChangePassword constraintAnnotation) {

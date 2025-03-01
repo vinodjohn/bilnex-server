@@ -1,6 +1,7 @@
 package com.finbite.bilnexserver.auth.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.finbite.bilnexserver.auth.dtos.CompanyDto;
 import com.finbite.bilnexserver.auth.utils.constraints.ValidPerson;
 import com.finbite.bilnexserver.common.models.Auditable;
 import jakarta.persistence.*;
@@ -26,13 +27,22 @@ public final class Company extends Auditable<String> {
     private UUID id;
 
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String regCode;
+
     private String vatNr;
     private String address;
     private String city;
     private int zipcode;
+    private String country;
     private boolean hasSubscribed;
 
     @JsonProperty("isActive")
     private boolean isActive;
+
+    public CompanyDto getDto() {
+        return new CompanyDto(id, name, regCode, vatNr, address, city, zipcode, country, hasSubscribed,
+                isActive);
+    }
 }

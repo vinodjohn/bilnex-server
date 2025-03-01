@@ -1,7 +1,8 @@
-package com.finbite.bilnexserver.auth.exceptions;
+package com.finbite.bilnexserver.auth.handlers;
 
-import com.finbite.bilnexserver.auth.models.Company;
-import com.finbite.bilnexserver.auth.models.Person;
+import com.finbite.bilnexserver.auth.exceptions.CompanyNotFoundException;
+import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
+import com.finbite.bilnexserver.auth.exceptions.TokenRefreshException;
 import com.finbite.bilnexserver.common.models.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +26,13 @@ import static com.finbite.bilnexserver.common.utils.AppUtils.getErrorResponse;
 public class AuthExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(PersonNotFoundException.class)
     public final ResponseEntity<Object> handlePersonNotFoundException(Exception ex) {
-        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), Person.class),
+        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), "Person"),
                 HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(CompanyNotFoundException.class)
     public final ResponseEntity<Object> handleCompanyNotFoundException(Exception ex) {
-        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), Company.class),
+        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), "Company"),
                 HttpStatus.NOT_FOUND);
     }
 

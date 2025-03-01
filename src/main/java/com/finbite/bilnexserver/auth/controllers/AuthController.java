@@ -4,24 +4,28 @@ import com.finbite.bilnexserver.auth.CompanyService;
 import com.finbite.bilnexserver.auth.PersonService;
 import com.finbite.bilnexserver.auth.TokenRefreshService;
 import com.finbite.bilnexserver.auth.configs.CustomUserDetails;
-import com.finbite.bilnexserver.auth.dtos.PersonDto;
 import com.finbite.bilnexserver.auth.dtos.SignIn;
 import com.finbite.bilnexserver.auth.dtos.SignUp;
+import com.finbite.bilnexserver.auth.events.EmailVerificationPublisher;
+import com.finbite.bilnexserver.auth.exceptions.CompanyNotFoundException;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Company;
 import com.finbite.bilnexserver.auth.models.Person;
 import com.finbite.bilnexserver.auth.models.TokenRefresh;
+import com.finbite.bilnexserver.auth.utils.AuthUtils;
 import com.finbite.bilnexserver.auth.utils.SecurityUtils;
+import com.finbite.bilnexserver.common.exceptions.EmailVerificationException;
+import com.finbite.bilnexserver.common.exceptions.EmailVerificationNotFoundException;
+import com.finbite.bilnexserver.notification.EmailVerificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,22 +42,22 @@ import java.util.UUID;
  * @created 27.02.2025
  */
 @RestController
+@AllArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private SecurityUtils securityUtils;
+    private final SecurityUtils securityUtils;
 
-    @Autowired
-    private PersonService personService;
+    private final PersonService personService;
 
-    @Autowired
-    private CompanyService companyService;
+    private final CompanyService companyService;
 
-    @Autowired
-    private TokenRefreshService tokenRefreshService;
+    private final TokenRefreshService tokenRefreshService;
+
+    private final EmailVerificationPublisher emailVerificationPublisher;
+
+    private final EmailVerificationService emailVerificationService;
 
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@Valid @RequestBody SignIn signIn) throws PersonNotFoundException {
@@ -65,56 +69,54 @@ public class AuthController {
         TokenRefresh tokenRefresh = tokenRefreshService.createRefreshToken(customUserDetails.getUserDto().id());
         ResponseCookie refreshJwtCookie = securityUtils.generateRefreshJwtCookie(tokenRefresh.getToken());
 
-        String role = customUserDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No authorities found for person"));
-
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.SET_COOKIE, generatedJwtCookie.toString());
         httpHeaders.add(HttpHeaders.SET_COOKIE, refreshJwtCookie.toString());
+        Person person = personService.findPersonById(customUserDetails.getUserDto().id());
 
         return ResponseEntity.ok()
                 .headers(httpHeaders)
-                .body(new PersonDto(customUserDetails.getUserDto().id(),
-                        customUserDetails.getUserDto().email(), role));
+                .body(person.toPersonDto());
     }
 
+    //Step-1
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignUp signUp) throws PersonNotFoundException {
-        //Step-1
-        if (signUp.id() == null) {
-            Person person = new Person();
-            person.setEmail(signUp.email());
+    public ResponseEntity<?> startSignup(@Valid @RequestBody SignUp signUp) {
+        emailVerificationPublisher.sendVerificationRequest(signUp.email());
+        return ResponseEntity.ok().body(signUp);
+    }
 
-            personService.createPerson(person);
+    //Step-2
+    @PostMapping("/verify-email/")
+    public ResponseEntity<?> verifyEmail(@RequestBody SignUp signUp) throws EmailVerificationNotFoundException,
+            EmailVerificationException {
+        emailVerificationService.verifyCode(signUp.email(), signUp.code());
+        return ResponseEntity.ok().body(signUp);
+    }
+
+    //Step-3 and 4
+    @PostMapping("/sign-up-confirm")
+    public ResponseEntity<?> signUpCompany(@Valid @RequestBody SignUp signUp) {
+        if (!signUp.isVerified()) {
+            throw new RuntimeException("Email is not verified! Please try again after verification!");
         }
 
-        //Step-2
-        if (signUp.isVerified() && signUp.company().id() == null) {
-            Company company = new Company();
-            company.setName(signUp.company().name());
-            company.setRegCode(signUp.company().regCode());
-            company.setVatNr(signUp.company().vatNr());
-            company.setAddress(signUp.company().address());
-            company.setCity(signUp.company().city());
-            company.setZipcode(signUp.company().zipcode());
+        Company company = AuthUtils.translateSignupToCompany(signUp);
 
+        try {
+            company = companyService.findCompanyByRegCode(company.getRegCode());
+        } catch (CompanyNotFoundException e) {
             company = companyService.createCompany(company);
-
-            Person person = personService.findPersonById(signUp.id());
-            person.setCompanies(Collections.singletonList(company));
-            personService.updatePersonWithPassword(person);
         }
 
-        //Step-3
-        if (signUp.isVerified() && signUp.company().id() != null && signUp.password() != null) {
-            Person person = personService.findPersonById(signUp.id());
-            person.setPassword(signUp.password());
-            personService.updatePersonWithPassword(person);
-        }
+        Person person = new Person();
+        person.setEmail(signUp.email());
+        person.setPassword(signUp.password());
+        person.setVerified(true);
+        person.setCompanies(Collections.singletonList(company));
+        Person createdPerson = personService.createPerson(person);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(createdPerson.toPersonDto());
     }
 
     @PostMapping("/refresh-token")

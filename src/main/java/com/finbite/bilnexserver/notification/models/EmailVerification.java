@@ -1,6 +1,5 @@
 package com.finbite.bilnexserver.notification.models;
 
-import com.finbite.bilnexserver.auth.utils.constraints.ValidPerson;
 import com.finbite.bilnexserver.common.models.Auditable;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -24,9 +23,7 @@ public class EmailVerification extends Auditable<String> {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false, unique = true)
     private String email;
-
     private String verificationCode;
     private LocalDateTime expirationTime;
 }

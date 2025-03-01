@@ -9,7 +9,7 @@ import java.util.UUID;
 
 /**
  * Service to handle Company related operations
- * 
+ *
  * @author vinodjohn
  * @created 28.02.2025
  */
@@ -26,9 +26,17 @@ public interface CompanyService {
      * To find a Company by ID
      *
      * @param id ID of a Company
-     * @return Company
+     * @return Company object
      */
     Company findCompanyById(UUID id) throws CompanyNotFoundException;
+
+    /**
+     * To find a Company by RegCode
+     *
+     * @param regCode Reg code of the Company
+     * @return Company object
+     */
+    Company findCompanyByRegCode(String regCode) throws CompanyNotFoundException;
 
     /**
      * To find all companies

@@ -53,7 +53,7 @@ public class PersonController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getPersonById(@PathVariable UUID id) throws PersonNotFoundException {
         Person person = personService.findPersonById(id);
-        return ResponseEntity.ok(person);
+        return ResponseEntity.ok(person.toPersonDto());
     }
 
     @PostMapping("/change-password")
@@ -65,13 +65,13 @@ public class PersonController {
         Person person = personService.findPersonById(customUserDetails.getUserDto().id());
         person.setPassword(changePassword.newPassword());
         personService.updatePersonWithPassword(person);
-        return ResponseEntity.ok(person);
+        return ResponseEntity.ok(person.toPersonDto());
     }
 
     @PostMapping
     public ResponseEntity<?> createPerson(@Valid @RequestBody Person person) {
         Person newPerson = personService.createPerson(person);
-        return new ResponseEntity<>(newPerson, HttpStatus.CREATED);
+        return new ResponseEntity<>(newPerson.toPersonDto(), HttpStatus.CREATED);
     }
 
     @GetMapping("/delete/{id}")
@@ -87,7 +87,8 @@ public class PersonController {
     }
 
     @GetMapping("/{id}/update-system-language/{lang}")
-    public ResponseEntity<?> updateSystemLanguage(@PathVariable UUID id, @PathVariable SystemLanguage lang) throws PersonNotFoundException {
+    public ResponseEntity<?> updateSystemLanguage(@PathVariable UUID id, @PathVariable SystemLanguage lang)
+            throws PersonNotFoundException {
         personService.updateSystemLanguage(id, lang);
         return new ResponseEntity<>(HttpStatus.OK);
     }

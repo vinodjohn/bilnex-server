@@ -3,8 +3,8 @@ package com.finbite.bilnexserver.notification.events;
 import com.finbite.bilnexserver.common.events.EmailVerificationRequest;
 import com.finbite.bilnexserver.notification.EmailVerificationService;
 import com.finbite.bilnexserver.notification.models.EmailVerification;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -19,9 +19,9 @@ import org.springframework.stereotype.Service;
  */
 @Slf4j
 @Service
+@AllArgsConstructor
 public class EmailVerificationListener {
-    @Autowired
-    private EmailVerificationService emailVerificationService;
+    private final EmailVerificationService emailVerificationService;
 
     @Async
     @EventListener

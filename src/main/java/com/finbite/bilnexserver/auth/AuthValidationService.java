@@ -4,6 +4,7 @@ import com.finbite.bilnexserver.auth.dtos.ChangePassword;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Company;
 import com.finbite.bilnexserver.auth.models.Person;
+import com.finbite.bilnexserver.common.exceptions.AppValidationException;
 
 /**
  * Service to validate different data
@@ -17,7 +18,7 @@ public interface AuthValidationService {
      *
      * @param person Person object
      */
-    void validatePerson(Person person) throws PersonNotFoundException;
+    void validatePerson(Person person) throws PersonNotFoundException, AppValidationException;
 
     /**
      * To validate Change Password
@@ -31,6 +32,6 @@ public interface AuthValidationService {
      *
      * @param company Company object
      */
-    void validateCompany(Company company);
+    void validateCompany(Company company) throws AppValidationException;
 
 }

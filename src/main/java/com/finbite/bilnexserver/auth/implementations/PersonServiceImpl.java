@@ -1,13 +1,12 @@
 package com.finbite.bilnexserver.auth.implementations;
 
-import com.finbite.bilnexserver.auth.events.EmailVerificationPublisher;
 import com.finbite.bilnexserver.auth.PersonService;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Person;
 import com.finbite.bilnexserver.auth.models.Role;
 import com.finbite.bilnexserver.auth.models.SystemLanguage;
 import com.finbite.bilnexserver.auth.repositories.PersonRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,15 +24,11 @@ import java.util.UUID;
  */
 @Service
 @Transactional
+@AllArgsConstructor
 public class PersonServiceImpl implements PersonService {
-    @Autowired
-    private PersonRepository personRepository;
+    private final PersonRepository personRepository;
 
-    @Autowired
-    private EmailVerificationPublisher emailVerificationProducerService;
-
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public Person createPerson(Person person) {
@@ -42,11 +37,8 @@ public class PersonServiceImpl implements PersonService {
         }
 
         person.setPassword(bCryptPasswordEncoder.encode(person.getPassword()));
-        Person savedPerson = personRepository.saveAndFlush(person);
-
-        emailVerificationProducerService.sendVerificationRequest(person.getEmail());
-
-        return savedPerson;
+        person.setActive(true);
+        return personRepository.saveAndFlush(person);
     }
 
     @Override
@@ -75,7 +67,7 @@ public class PersonServiceImpl implements PersonService {
     public Person findActivePersonByEmail(String email) throws PersonNotFoundException {
         Person person = findPersonByEmail(email);
 
-        if(!person.isActive()) {
+        if (!person.isActive()) {
             throw new PersonNotFoundException(email);
         }
 

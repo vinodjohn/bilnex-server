@@ -19,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- *  Authentication Token Filter implementation
+ * Authentication Token Filter implementation
  *
  * @author vinodjohn
  * @created 27.02.2025
@@ -39,15 +39,19 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
 
-            if (jwt != null && securityUtils.validateJwtToken(jwt)) {
-                String username = securityUtils.getUserNameFromJwtToken(jwt);
+            if (jwt != null) {
+                assert securityUtils != null;
+                if (securityUtils.validateJwtToken(jwt)) {
+                    String username = securityUtils.getUserNameFromJwtToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                var authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-                        userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    assert userDetailsService != null;
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    var authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                            userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e.getMessage());
@@ -58,6 +62,7 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
 
     // PRIVATE METHODS //
     private String parseJwt(HttpServletRequest request) {
+        assert securityUtils != null;
         return securityUtils.getJwtFromCookies(request);
     }
 }

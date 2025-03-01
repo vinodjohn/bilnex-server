@@ -9,13 +9,14 @@ import com.finbite.bilnexserver.auth.models.Company;
 import com.finbite.bilnexserver.auth.models.Person;
 import com.finbite.bilnexserver.common.dtos.UserDto;
 import com.finbite.bilnexserver.common.exceptions.AppValidationException;
+import com.finbite.bilnexserver.common.utils.AppUtils;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of AuthValidationService
@@ -25,27 +26,30 @@ import java.text.MessageFormat;
  */
 @Service
 @Slf4j
+@AllArgsConstructor
 public class AuthValidationServiceImpl implements AuthValidationService {
-    @Autowired
-    private PersonService personService;
+    private final PersonService personService;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public void validatePerson(Person person) {
-        if (person.getId() == null && !person.isActive() && !person.isVerified()) {
+    public void validatePerson(Person person) throws AppValidationException {
+        if (person.getId() == null && !person.isActive()) {
+            if (!isEmailValid(person.getEmail())) {
+                throw new AppValidationException(AppUtils.getExceptionMessage("Person", "email", false));
+            }
+
             try {
                 personService.findPersonByEmail(person.getEmail());
-                throw new AppValidationException(MessageFormat.format("{0} {1} already exists!", "Person", "Email"));
-            } catch (PersonNotFoundException | AppValidationException e) {
+                throw new AppValidationException(AppUtils.getExceptionMessage("Person", "email", true));
+            } catch (PersonNotFoundException e) {
                 log.info("Person with email {} not found", person.getEmail());
             }
         }
 
         if (!person.isActive() && person.isVerified() && !person.getPassword().isEmpty() && !isPasswordValid(person.getPassword())) {
             log.info("Password validation failed for email {}.", person.getEmail());
-            throw new RuntimeException(MessageFormat.format("{0} is not a valid password!", person.getPassword()));
+            throw new AppValidationException(AppUtils.getExceptionMessage("Person", "password", false));
         }
     }
 
@@ -66,15 +70,34 @@ public class AuthValidationServiceImpl implements AuthValidationService {
     }
 
     @Override
-    public void validateCompany(Company company) {
-        if (company.getName().isEmpty() || company.getRegCode().isEmpty() || company.getAddress().isEmpty()
-                || company.getCity().isEmpty()) {
-            throw new RuntimeException("Company details missing!");
+    public void validateCompany(Company company) throws AppValidationException {
+        if (company.getCountry().isEmpty()) {
+            throw new AppValidationException(AppUtils.getExceptionMessage("Company", "country", false));
+        }
+
+        if (company.getName().isEmpty()) {
+            throw new AppValidationException(AppUtils.getExceptionMessage("Company", "name", false));
+        }
+
+        if (company.getRegCode().isEmpty()) {
+            throw new AppValidationException(AppUtils.getExceptionMessage("Company", "Reg code", false));
+        }
+
+        if (company.getAddress().isEmpty()) {
+            throw new AppValidationException(AppUtils.getExceptionMessage("Company", "Address", false));
+        }
+
+        if (company.getCity().isEmpty()) {
+            throw new AppValidationException(AppUtils.getExceptionMessage("Company", "city", false));
         }
     }
 
     // PRIVATE METHODS //
+    private boolean isEmailValid(String email) {
+        return Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$").matcher(email).matches();
+    }
+
     private boolean isPasswordValid(String password) {
-        return password.length() >= 8;
+        return Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$").matcher(password).matches();
     }
 }

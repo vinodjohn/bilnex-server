@@ -1,7 +1,7 @@
 package com.finbite.bilnexserver.auth.events;
 
 import com.finbite.bilnexserver.common.events.EmailVerificationRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +14,9 @@ import java.util.UUID;
  * @created 28.02.2025
  */
 @Service
+@AllArgsConstructor
 public class EmailVerificationPublisher {
-    @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public void sendVerificationRequest(String email) {
         String verificationCode = generateVerificationCode();
@@ -25,6 +25,7 @@ public class EmailVerificationPublisher {
 
     // PRIVATE METHODS //
     private String generateVerificationCode() {
-        return String.format("%06d", UUID.randomUUID().hashCode() % 1000000);
+        int code = UUID.randomUUID().hashCode() % 1000000;
+        return String.format("%06d", (code < 0) ? -code : code);
     }
 }

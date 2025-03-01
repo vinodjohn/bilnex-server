@@ -3,9 +3,10 @@ package com.finbite.bilnexserver.auth.utils.constraints;
 import com.finbite.bilnexserver.auth.AuthValidationService;
 import com.finbite.bilnexserver.auth.exceptions.PersonNotFoundException;
 import com.finbite.bilnexserver.auth.models.Person;
+import com.finbite.bilnexserver.common.exceptions.AppValidationException;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,9 +16,9 @@ import org.springframework.stereotype.Component;
  * @created 27.02.2025
  */
 @Component
+@AllArgsConstructor
 public class PersonValidator implements ConstraintValidator<ValidPerson, Person> {
-    @Autowired
-    private AuthValidationService authValidationService;
+    private final AuthValidationService authValidationService;
 
     @Override
     public void initialize(ValidPerson constraintAnnotation) {
@@ -29,7 +30,7 @@ public class PersonValidator implements ConstraintValidator<ValidPerson, Person>
         try {
             authValidationService.validatePerson(person);
             return true;
-        } catch (PersonNotFoundException e) {
+        } catch (PersonNotFoundException | AppValidationException e) {
             if (!e.getMessage().isBlank()) {
                 constraintValidatorContext.buildConstraintViolationWithTemplate(e.getMessage())
                         .addConstraintViolation()

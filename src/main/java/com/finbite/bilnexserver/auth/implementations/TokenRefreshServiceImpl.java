@@ -7,7 +7,7 @@ import com.finbite.bilnexserver.auth.exceptions.TokenRefreshException;
 import com.finbite.bilnexserver.auth.models.TokenRefresh;
 import com.finbite.bilnexserver.auth.repositories.TokenRefreshRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +24,11 @@ import java.util.UUID;
  */
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TokenRefreshServiceImpl implements TokenRefreshService {
-    @Autowired
-    private TokenRefreshRepository tokenRefreshRepository;
+    private final TokenRefreshRepository tokenRefreshRepository;
 
-    @Autowired
-    private PersonService personService;
+    private final PersonService personService;
 
     @Value("${bilnex.app.jwtRefreshExpirationSec}")
     private int tokenRefreshDuration;
