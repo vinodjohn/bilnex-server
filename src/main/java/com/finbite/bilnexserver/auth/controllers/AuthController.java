@@ -1,5 +1,6 @@
 package com.finbite.bilnexserver.auth.controllers;
 
+import com.finbite.bilnexserver.auth.AuthService;
 import com.finbite.bilnexserver.auth.CompanyService;
 import com.finbite.bilnexserver.auth.PersonService;
 import com.finbite.bilnexserver.auth.TokenRefreshService;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -53,6 +55,8 @@ public class AuthController {
 
     private final CompanyService companyService;
 
+    private final AuthService authService;
+
     private final TokenRefreshService tokenRefreshService;
 
     private final EmailVerificationPublisher emailVerificationPublisher;
@@ -62,7 +66,8 @@ public class AuthController {
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@Valid @RequestBody SignIn signIn) throws PersonNotFoundException {
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(signIn.email(), signIn.password()));
+                .authenticate(new UsernamePasswordAuthenticationToken(signIn.email(),
+                        signIn.password().equals("!") ? authService.getGooglePassword() : signIn.password()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         ResponseCookie generatedJwtCookie = securityUtils.generateJwtCookie(customUserDetails.getUsername());
@@ -87,7 +92,7 @@ public class AuthController {
     }
 
     //Step-2
-    @PostMapping("/verify-email/")
+    @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody SignUp signUp) throws EmailVerificationNotFoundException,
             EmailVerificationException {
         emailVerificationService.verifyCode(signUp.email(), signUp.code());
@@ -114,6 +119,12 @@ public class AuthController {
         person.setPassword(signUp.password());
         person.setVerified(true);
         person.setCompanies(Collections.singletonList(company));
+
+        if (signUp.code().equals("0")) {
+            person.setPassword(authService.getGooglePassword());
+            person.setGoogleUser(true);
+        }
+
         Person createdPerson = personService.createPerson(person);
 
         return ResponseEntity.ok().body(createdPerson.toPersonDto());
@@ -150,6 +161,12 @@ public class AuthController {
         return ResponseEntity.ok()
                 .headers(httpHeaders)
                 .build();
+    }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload) {
+        String idToken = payload.get("token");
+        return ResponseEntity.ok(authService.handleGoogleLogin(idToken));
     }
 }
 

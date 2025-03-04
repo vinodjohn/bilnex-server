@@ -12,5 +12,5 @@ import java.util.UUID;
  * @created 27.02.2025
  */
 public record PersonDto(UUID id, String email, String role, List<CompanyDto> companyDtoList, boolean isVerified,
-                        SystemLanguage defaultLanguage, boolean isActive) {
+                        boolean isGoogleUser, SystemLanguage defaultLanguage, boolean isActive) {
 }

@@ -9,5 +9,5 @@ import java.util.UUID;
  * @created 27.02.2025
  */
 public record CompanyDto(UUID id, String name, String regCode, String vatNr, String address, String city,
-                         int zipcode, String countryCode, boolean hasSubscribed, boolean isActive) {
+                         String zipcode, String country, boolean hasSubscribed, boolean isDefault, boolean isActive) {
 }

@@ -27,6 +27,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public Company createCompany(Company company) {
+        company.setActive(true);
         return companyRepository.saveAndFlush(company);
     }
 

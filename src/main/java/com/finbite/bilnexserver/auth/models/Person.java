@@ -41,6 +41,9 @@ public final class Person extends Auditable<String> {
     @JsonProperty("isVerified")
     private boolean isVerified;
 
+    @JsonProperty("isGoogleUser")
+    private boolean isGoogleUser;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Company> companies;
 
@@ -63,7 +66,7 @@ public final class Person extends Auditable<String> {
     public PersonDto toPersonDto() {
         return new PersonDto(id, email, role.toString(),
                 companies == null || companies.isEmpty() ? Collections.emptyList() : getCompanyDtoList(),
-                isVerified, defaultSystemLanguage, isActive);
+                isVerified, isGoogleUser, defaultSystemLanguage, isActive);
     }
 
 

@@ -12,7 +12,7 @@ import com.finbite.bilnexserver.auth.models.Company;
 public class AuthUtils {
     public static Company translateSignupToCompany(SignUp signUp) {
         Company company = new Company();
-        company.setCountry(signUp.company().countryCode());
+        company.setCountry(signUp.company().country());
         company.setName(signUp.company().name());
         company.setRegCode(signUp.company().regCode());
         company.setVatNr(signUp.company().vatNr());
@@ -20,6 +20,7 @@ public class AuthUtils {
         company.setCity(signUp.company().city());
         company.setZipcode(signUp.company().zipcode());
         company.setHasSubscribed(signUp.company().hasSubscribed());
+        company.setDefault(true);
 
         return company;
     }

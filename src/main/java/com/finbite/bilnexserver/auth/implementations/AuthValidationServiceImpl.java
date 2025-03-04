@@ -47,7 +47,8 @@ public class AuthValidationServiceImpl implements AuthValidationService {
             }
         }
 
-        if (!person.isActive() && person.isVerified() && !person.getPassword().isEmpty() && !isPasswordValid(person.getPassword())) {
+        if (!person.isActive() && !person.isGoogleUser() && person.isVerified() && !person.getPassword().isEmpty()
+                && !isPasswordValid(person.getPassword())) {
             log.info("Password validation failed for email {}.", person.getEmail());
             throw new AppValidationException(AppUtils.getExceptionMessage("Person", "password", false));
         }

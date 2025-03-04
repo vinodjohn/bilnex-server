@@ -44,7 +44,6 @@ public class SecurityUtils {
         Date now = new Date(currentTimeMillis);
         Date expiryDate = new Date(currentTimeMillis + TimeUnit.SECONDS.toMillis(jwtExpirationSec));
 
-
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(now)

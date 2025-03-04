@@ -68,12 +68,6 @@ public class PersonController {
         return ResponseEntity.ok(person.toPersonDto());
     }
 
-    @PostMapping
-    public ResponseEntity<?> createPerson(@Valid @RequestBody Person person) {
-        Person newPerson = personService.createPerson(person);
-        return new ResponseEntity<>(newPerson.toPersonDto(), HttpStatus.CREATED);
-    }
-
     @GetMapping("/delete/{id}")
     public ResponseEntity<?> deletePerson(@PathVariable UUID id) throws PersonNotFoundException {
         personService.deletePersonById(id);

@@ -34,15 +34,20 @@ public final class Company extends Auditable<String> {
     private String vatNr;
     private String address;
     private String city;
-    private int zipcode;
+    private String zipcode;
     private String country;
+
+    @JsonProperty("hasSubscribed")
     private boolean hasSubscribed;
+
+    @JsonProperty("isDefault")
+    private boolean isDefault;
 
     @JsonProperty("isActive")
     private boolean isActive;
 
     public CompanyDto getDto() {
-        return new CompanyDto(id, name, regCode, vatNr, address, city, zipcode, country, hasSubscribed,
+        return new CompanyDto(id, name, regCode, vatNr, address, city, zipcode, country, hasSubscribed, isDefault,
                 isActive);
     }
 }

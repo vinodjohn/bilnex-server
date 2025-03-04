@@ -1,6 +1,8 @@
 package com.finbite.bilnexserver.common.handlers;
 
 import com.finbite.bilnexserver.common.exceptions.AppValidationException;
+import com.finbite.bilnexserver.common.exceptions.EmailVerificationException;
+import com.finbite.bilnexserver.common.exceptions.EmailVerificationNotFoundException;
 import com.finbite.bilnexserver.common.models.ErrorResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -39,6 +41,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<Object> handleLoanValidationException(Exception ex) {
         return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), "LoanValidationException"),
                 ex.getLocalizedMessage().contains("Invalid") ? HttpStatus.BAD_REQUEST : HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EmailVerificationException.class)
+    public final ResponseEntity<Object> handleEmailVerificationException(Exception ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), "Email Verification"),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(EmailVerificationNotFoundException.class)
+    public final ResponseEntity<Object> handleEmailVerificationNotFoundException(Exception ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getLocalizedMessage(), "Email Verification"),
+                HttpStatus.NOT_FOUND);
     }
 
     @Override
