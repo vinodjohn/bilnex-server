@@ -3,7 +3,7 @@ package com.finbite.bilnexserver.auth.dtos;
 import java.util.UUID;
 
 /**
- * Company DTO>
+ * Company DTO
  *
  * @author vinodjohn
  * @created 27.02.2025
